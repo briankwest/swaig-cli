@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "swaig_cli"
-version = "0.1.0"
+version = "0.1.2"
 description = "A command-line tool for testing SignalWire AI Gateway functions"
 readme = "README.md"
 authors = [

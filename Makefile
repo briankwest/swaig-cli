@@ -1,6 +1,6 @@
 build:
 	python3 -m venv "./venv"
-	./venv/bin/pip install twine build
+	./venv/bin/pip install twine build wheel
 	./venv/bin/python3 -m build
 
 upload:

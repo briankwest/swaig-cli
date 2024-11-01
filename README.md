@@ -88,7 +88,7 @@ swaig_cli --url http://example.com --function myFunction
 
 ## Author
 
-Written by Brian Sest.
+Written by Brian West.
 
 ## Reporting Bugs
 

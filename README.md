@@ -1,8 +1,6 @@
-# SWAIG CLI Tool
+# SWAIG CLI
 
-## Overview
-
-The `swaig_cli` is a command-line tool designed for testing SignalWire AI Gateway functions. It allows users to interact with the SWAIG server to retrieve function signatures and test specific functions by name.
+A command-line tool for testing SignalWire AI Gateway functions.
 
 ## Installation
 
@@ -10,80 +8,68 @@ To install the `swaig_cli` tool, download the latest release from the [official 
 
 ## Usage
 
-### Basic Command
+### Basic Commands
 
 ```bash
-swaig_cli [--url URL] [--get-signatures] [--function FUNCTION_NAME]
+# Interactive mode
+swaig_cli --url URL --function FUNCTION_NAME
+
+# Get signatures
+swaig_cli --url URL --get-signatures [--function FUNCTION_NAME]
+
+# Direct JSON mode
+swaig_cli --url URL --json '{"function": "function_name", "argument": {"parsed": [{"key": "value"}]}}'
 ```
 
 ### Options
 
 - `--url URL`: Specify the URL of the SWAIG server. This option is required for all operations.
-- `--get-signatures`: Retrieve the function signatures from the SWAIG server. Outputs the signatures in JSON format.
-- `--function FUNCTION_NAME`: Test a specific function by its name. The tool will prompt for required and optional arguments based on the function signature.
+- `--get-signatures`: Retrieve the function signatures from the SWAIG server.
+- `--function FUNCTION_NAME`: Test a specific function by name (interactive mode).
+- `--json JSON_PAYLOAD`: Send a direct JSON payload to the server. The JSON payload should include the function name and any necessary arguments.
+
+### JSON Payload Structure
+
+The `--json` option allows you to send a direct JSON payload to the SWAIG server. The JSON should be structured as follows:
+
+```json
+{
+    "function": "function_name",
+    "argument": {
+        "parsed": [
+            {
+                "key": "value"
+            }
+        ]
+    }
+}
+```
+
+- `function`: The name of the function you want to test.
+- `argument`: A dictionary containing the arguments for the function. The `parsed` key should contain a list of key-value pairs representing the arguments.
 
 ### Examples
 
-#### Retrieve Function Signatures
-
-To retrieve function signatures from the SWAIG server:
+#### Interactive Function Testing
 
 ```bash
-swaig_cli --url http://example.com --get-signatures --function myFunction
+swaig_cli --url http://example.com/swaig --function verify_insurance
 ```
 
-#### Test a Specific Function
-
-To test a specific function:
+#### Using JSON Payload
 
 ```bash
-swaig_cli --url http://example.com --function myFunction
+swaig_cli --url http://example.com/swaig --function verify_insurance --json '{
+  "member_id": "123456789",
+  "insurance_provider": "1",
+  "date_of_birth": "1"
+}'
 ```
 
-### Example Requests and Responses
+#### Get Function Signatures
 
-#### Example Request for Function Signatures
-
-```json
-{
-  "functions": ["myFunction"],
-  "action": "get_signature",
-  "version": "2.0",
-  "content_disposition": "function signature request",
-  "content_type": "text/swaig"
-}
-```
-
-#### Example Response for Function Signatures
-
-```json
-{
-  "function": "myFunction",
-  "argument": {
-    "required": ["arg1", "arg2"],
-    "properties": {
-      "arg1": {"type": "string"},
-      "arg2": {"type": "integer"}
-    }
-  }
-}
-```
-
-#### Example Request for Testing a Function
-
-```json
-{
-  "function": "myFunction",
-  "argument": {"parsed": [{"arg1": "value1", "arg2": 42}]}
-}
-```
-
-#### Example Response for Testing a Function
-
-```json
-{
-  "response": "Output fed into the LLM"
-}
+```bash
+swaig_cli --url http://example.com/swaig --get-signatures --function verify_insurance
 ```
 
 ## Author
@@ -97,11 +83,6 @@ Report bugs to [brian@signalwire.com](mailto:brian@signalwire.com).
 ## License
 
 This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-## See Also
-
-- `curl(1)`
-- `jq(1)`
 ```
 
 This README provides a concise overview of the `swaig_cli` tool, its usage, options, and examples, based on the information from the man page.

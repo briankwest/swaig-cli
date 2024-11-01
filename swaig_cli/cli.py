@@ -58,47 +58,53 @@ def test_function(url, function_names, args):
             print(f"Error: Function {function_names} not found in signatures")
             sys.exit(1)
 
-        required_args = function_signature['parameters']['required']
-        properties = function_signature['parameters']['properties']
-        
-        # Collect required and optional arguments from user
-        function_args = {}
-        for arg, details in properties.items():
-            arg_type = details['type']
-            is_required = arg in required_args
-            description = details.get('description', '')
-            prompt = f"Enter {arg} ({arg_type})"
-            if description:
-                prompt += f" - {description}"
-            if not is_required:
-                prompt += " [optional]"
+        if args.json:
+            try:
+                function_args = json.loads(args.json)
+            except json.JSONDecodeError:
+                print("Error: Invalid JSON format")
+                sys.exit(1)
+        else:
+            required_args = function_signature['parameters']['required']
+            properties = function_signature['parameters']['properties']
             
-            while True:
-                value = input(prompt + ": ")
+            function_args = {}
+            for arg, details in properties.items():
+                arg_type = details['type']
+                is_required = arg in required_args
+                description = details.get('description', '')
+                prompt = f"Enter {arg} ({arg_type})"
+                if description:
+                    prompt += f" - {description}"
+                if not is_required:
+                    prompt += " [optional]"
                 
-                if not value and is_required:
-                    print(f"Error: {arg} is required")
-                    continue
-                elif not value and not is_required:
-                    break
-                
-                try:
-                    if arg_type == "integer":
-                        value = int(value)
-                    elif arg_type == "boolean":
-                        value = value.lower() in ("true", "1", "yes")
-                    function_args[arg] = value
-                    break
-                except ValueError:
-                    print(f"Error: Invalid {arg_type} value")
+                while True:
+                    value = input(prompt + ": ")
+                    
+                    if not value and is_required:
+                        print(f"Error: {arg} is required")
+                        continue
+                    elif not value and not is_required:
+                        break
+                    
+                    try:
+                        if arg_type == "integer":
+                            value = int(value)
+                        elif arg_type == "boolean":
+                            value = value.lower() in ("true", "1", "yes")
+                        function_args[arg] = value
+                        break
+                    except ValueError:
+                        print(f"Error: Invalid {arg_type} value")
 
-        # Make the request to test the function
         payload = {
             "function": function_names[0],
             "argument": {"parsed": [function_args]}
         }
         
         print("\nSending request to server...")
+        print(json.dumps(payload, indent=2))
         response = requests.post(url, json=payload)
         result = handle_response(response)
         
@@ -129,11 +135,15 @@ Examples:
 
   Test a function:
     %(prog)s --url http://username:password@localhost:5002/swaig --function create_reservation
+
+  Test a function with JSON arguments:
+    %(prog)s --url http://username:password@localhost:5002/swaig --function search_movie --json '{"query": "Pretty Woman"}'
         """
     )
     parser.add_argument('--url', required=True, help='The SWAIG server URL (including auth if required)')
     parser.add_argument('--get-signatures', action='store_true', help='Get function signatures')
     parser.add_argument('--function', help='Test a specific function by name')
+    parser.add_argument('--json', help='JSON string containing function arguments')
 
     if len(sys.argv) == 1:
         parser.print_help()

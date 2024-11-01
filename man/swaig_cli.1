@@ -22,6 +22,14 @@ Retrieve the function signatures from the SWAIG server. This option will output 
 \fB--function\fR \fIFUNCTION_NAME\fR
 Test a specific function by its name. The tool will prompt the user to input required and optional arguments for the function based on the function signature retrieved from the SWAIG server.
 
+.TP
+\fB--json\fR \fIJSON_STRING\fR
+Provide a JSON string containing function arguments. This option is used when testing a specific function.
+
+.TP
+\fB--version\fR
+Display the version of the swaig_cli tool.
+
 .SH USAGE
 To retrieve function signatures from the SWAIG server, use:
 .EX
@@ -31,6 +39,16 @@ swaig_cli --url http://example.com --get-signatures --function myFunction
 To test a specific function, use:
 .EX
 swaig_cli --url http://example.com --function myFunction
+.EE
+
+To test a function with JSON arguments, use:
+.EX
+swaig_cli --url http://example.com --function myFunction --json '{"arg1": "value1", "arg2": 42}'
+.EE
+
+To display the version of the swaig_cli tool, use:
+.EX
+swaig_cli --version
 .EE
 
 .SH EXAMPLES

@@ -18,7 +18,7 @@ swaig_cli --url URL --function FUNCTION_NAME
 swaig_cli --url URL --get-signatures [--function FUNCTION_NAME]
 
 # Direct JSON mode
-swaig_cli --url URL --json '{"function": "function_name", "argument": {"parsed": [{"key": "value"}]}}'
+swaig_cli --url URL --json '{"key": "value"}'
 ```
 
 ### Options

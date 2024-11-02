@@ -34,14 +34,7 @@ The `--json` option allows you to send a direct JSON payload to the SWAIG server
 
 ```json
 {
-    "function": "function_name",
-    "argument": {
-        "parsed": [
-            {
-                "key": "value"
-            }
-        ]
-    }
+  "key": "value"
 }
 ```
 

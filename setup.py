@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="swaig-cli",
-    version="0.1.4",
+    version="0.1.5",
     author="Brian West",
     author_email="brian@signalwire.com",
     description="A command-line tool for testing SignalWire AI Gateway functions",

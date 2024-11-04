@@ -44,6 +44,22 @@ def get_signatures(url, function_names):
         print(f"Error connecting to server: {str(e)}")
         sys.exit(1)
 
+def convert_value(value, type_name, items_type=None):
+    """Convert a value to the specified type"""
+    if type_name == "array":
+        if not isinstance(value, list):
+            value = [value]
+        return [convert_value(item, items_type) for item in value]
+    elif type_name == "integer":
+        return int(value)
+    elif type_name == "number":
+        return float(value)
+    elif type_name == "boolean":
+        if isinstance(value, str):
+            return value.lower() in ("true", "1", "yes")
+        return bool(value)
+    return value
+
 def test_function(url, function_names, args):
     """Test a specific SWAIG function"""
     try:
@@ -60,7 +76,17 @@ def test_function(url, function_names, args):
 
         if args.json:
             try:
-                function_args = json.loads(args.json)
+                raw_args = json.loads(args.json)
+                function_args = {}
+                properties = function_signature['parameters']['properties']
+                
+                for arg, value in raw_args.items():
+                    if arg in properties:
+                        arg_type = properties[arg]['type']
+                        items_type = properties[arg].get('items', {}).get('type') if arg_type == "array" else None
+                        function_args[arg] = convert_value(value, arg_type, items_type)
+                    else:
+                        function_args[arg] = value
             except json.JSONDecodeError:
                 print("Error: Invalid JSON format")
                 sys.exit(1)
@@ -73,30 +99,50 @@ def test_function(url, function_names, args):
                 arg_type = details['type']
                 is_required = arg in required_args
                 description = details.get('description', '')
-                prompt = f"Enter {arg} ({arg_type})"
+                items_type = details.get('items', {}).get('type') if arg_type == "array" else None
+
+                if arg_type == "array":
+                    prompt = f"Enter {arg} (array of {items_type})"
+                else:
+                    prompt = f"Enter {arg} ({arg_type})"
                 if description:
                     prompt += f" - {description}"
                 if not is_required:
                     prompt += " [optional]"
-                
-                while True:
-                    value = input(prompt + ": ")
-                    
-                    if not value and is_required:
-                        print(f"Error: {arg} is required")
-                        continue
-                    elif not value and not is_required:
-                        break
-                    
-                    try:
-                        if arg_type == "integer":
-                            value = int(value)
-                        elif arg_type == "boolean":
-                            value = value.lower() in ("true", "1", "yes")
-                        function_args[arg] = value
-                        break
-                    except ValueError:
-                        print(f"Error: Invalid {arg_type} value")
+
+                if arg_type == "array":
+                    values = []
+                    print(f"\n{prompt}")
+                    print("Enter one value per line. Leave empty to finish.")
+                    while True:
+                        value = input(f"Enter value (or empty to finish): ")
+                        if not value:
+                            if not values and is_required:
+                                print(f"Error: {arg} is required")
+                                continue
+                            break
+                        try:
+                            converted_value = convert_value(value, items_type)
+                            values.append(converted_value)
+                        except ValueError:
+                            print(f"Error: Invalid {items_type} value")
+                    if values:
+                        function_args[arg] = values
+                else:
+                    while True:
+                        value = input(prompt + ": ")
+                        
+                        if not value and is_required:
+                            print(f"Error: {arg} is required")
+                            continue
+                        elif not value and not is_required:
+                            break
+                        
+                        try:
+                            function_args[arg] = convert_value(value, arg_type)
+                            break
+                        except ValueError:
+                            print(f"Error: Invalid {arg_type} value")
 
         payload = {
             "function": function_names[0],

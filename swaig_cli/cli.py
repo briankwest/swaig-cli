@@ -36,7 +36,9 @@ def get_signatures(url, function_names):
             "action": "get_signature",
             "version": "2.0",
             "content_disposition": "function signature request",
-            "content_type": "text/swaig"
+            "content_type": "text/swaig",
+            "meta_data": {},
+            "meta_data_token": "swaig-cli"
         }
         response = requests.post(url, json=payload)
         return handle_response(response)
@@ -60,7 +62,7 @@ def convert_value(value, type_name, items_type=None):
         return bool(value)
     return value
 
-def test_function(url, function_names, args):
+def test_function(url, function_names, args, meta_data):
     """Test a specific SWAIG function"""
     try:
         signatures = get_signatures(url, function_names)
@@ -146,7 +148,9 @@ def test_function(url, function_names, args):
 
         payload = {
             "function": function_names[0],
-            "argument": {"parsed": [function_args]}
+            "argument": {"parsed": [function_args]},
+            "meta_data": meta_data or {},
+            "meta_data_token": "swaig-cli"
         }
         
         print("\nSending request to server...")
@@ -190,6 +194,7 @@ Examples:
     parser.add_argument('--get-signatures', action='store_true', help='Get function signatures')
     parser.add_argument('--function', help='Test a specific function by name')
     parser.add_argument('--json', help='JSON string containing function arguments')
+    parser.add_argument('--meta-data', help='Additional metadata to include in the request as a JSON string')
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -198,12 +203,21 @@ Examples:
     args = parser.parse_args()
     function_names = args.function.split(',') if args.function else []
 
+    if args.meta_data:
+        try:
+            meta_data = json.loads(args.meta_data)
+        except json.JSONDecodeError:
+            print("Error: Invalid JSON format for meta-data")
+            sys.exit(1)
+    else:
+        meta_data = {}
+
     try:
         if args.get_signatures:
             signatures = get_signatures(args.url, function_names)
             print(json.dumps(signatures, indent=2))
         elif args.function:
-            test_function(args.url, [args.function], args)
+            test_function(args.url, [args.function], args, meta_data)
         else:
             parser.print_help()
     except KeyboardInterrupt:
